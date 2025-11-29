@@ -9,7 +9,12 @@
 // --------------------------
 // Clear screen
 // --------------------------
-#define clrscr() printf("\033[2J\033[H")
+#define clrscr()         \
+    do                   \
+    {                    \
+        printf("\033c"); \
+        fflush(stdout);  \
+    } while (0)
 
 // --------------------------
 // Move cursor to (x,y)
