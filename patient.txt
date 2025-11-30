@@ -1,0 +1,3 @@
+Anjal|13|Male|9869156064|Hattiban|19|admin
+Saimon|18|m|9111111111|asad|29|qwerty
+Sadish Pandey|78|o|9000000000|kalanki|39|plkl

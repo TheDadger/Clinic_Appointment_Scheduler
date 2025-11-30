@@ -1,20 +1,10 @@
 #include <stdio.h>
-#include "myconio.h"
 
 int main()
 {
-    clrscr();
-    gotoxy(10, 5);
-    printf("Press any key to continue...\n");
-
-    while (!kbhit())
-    {
-        // waiting for key press
-    }
-
-    int ch = getch();
-    gotoxy(10, 7);
-    printf("You pressed: %c\n", ch);
+    int number = 1109;
+    int id = ((number / 10) + 1) * 10 + 9;
+    printf("ID: %d\n", id);
 
     return 0;
 }
