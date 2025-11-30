@@ -15,6 +15,19 @@ struct patient
     char password[20];
 };
 
+struct doctor
+{
+    char name[50];
+    int age;
+    char specialty[50];
+    long long contact_number;
+    char qualifications[100];
+    char institution[100];
+    int experience;
+    int username;
+    char password[20];
+};
+
 void Main_Menu_Page();
 void exit_program();
 void patient_menu();
@@ -25,6 +38,7 @@ void patient_registration();
 void patient_login();
 void doctor_registration();
 void doctor_login();
+void patient_dashboard(int);
 
 void slow_print_string(char *str, int d)
 {
@@ -42,6 +56,22 @@ char frame_line[] = "|**********************************************************
 char input_msg[] = "|  Select an option:                                                           |\n";
 char back_msg[] = "|                                                           (Click * for back) |\n";
 char home_msg[] = "|                                                           (Click # for home) |";
+char category[15][30] = {
+    "General Physician",
+    "Pediatrician",
+    "Dermatologist",
+    "Cardiologist",
+    "Neurologist",
+    "Psychiatrist",
+    "Gynecologist",
+    "Orthopedic Surgeon",
+    "ENT Specialist",
+    "Ophthalmologist",
+    "Dentist",
+    "Radiologist",
+    "Anesthesiologist",
+    "Urologist",
+    "Endocrinologist"};
 
 int main()
 {
@@ -218,9 +248,9 @@ void patient_registration()
     slow_print_string(blank_line, 6);
     slow_print_string("| Name:                                                                        |\n", 6);
     slow_print_string("| Age:                                                                         |\n", 6);
-    slow_print_string("| Gender:                                                                      |\n", 6);
+    slow_print_string("| Gender(M/F/O):                                                               |\n", 6);
     slow_print_string(blank_line, 6);
-    slow_print_string("| Contact Number:                                                              |\n", 6);
+    slow_print_string("| Contact Number(10 digits):                                                   |\n", 6);
     slow_print_string("| Address:                                                                     |\n", 6);
     slow_print_string(blank_line, 6);
     slow_print_string(frame_line, 6);
@@ -376,6 +406,8 @@ void patient_registration()
 void patient_login()
 {
     clrscr();
+    FILE *file;
+    struct patient temp;
     slow_print_string(border, 6);
     slow_print_string(blank_line, 6);
     slow_print_string("| Patient Login                                                                |\n", 6);
@@ -387,6 +419,54 @@ void patient_login()
     slow_print_string("| Password:                                                                    |\n", 6);
     slow_print_string(blank_line, 6);
     slow_print_string(border, 6);
+    file = fopen("patient.txt", "r");
+    if (file == NULL)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+    gotoxy(12, 7);
+    char username_input[20];
+    fgets(username_input, 20, stdin);
+    if (username_input[0] == '*')
+    {
+        fclose(file);
+        patient_menu();
+    }
+    username_input[strcspn(username_input, "\r\n")] = 0; // Remove newline character
+    int username_val = atoi(username_input);
+
+    gotoxy(12, 8);
+    char password_input[20];
+    fgets(password_input, 20, stdin);
+    if (password_input[0] == '*')
+    {
+        fclose(file);
+        patient_menu();
+    }
+    password_input[strcspn(password_input, "\r\n")] = 0; //
+    int user_found = 0;
+    while ((fscanf(file, "%49[^|]|%d|%7[^|]|%lld|%100[^|]|%d|%20[^\n]", temp.name, &temp.age, temp.gender, &temp.contact_number, temp.address, &temp.username, temp.password)) != EOF)
+    {
+        if (temp.username == username_val && strcmp(temp.password, password_input) == 0)
+        {
+            gotoxy(8, 9);
+            slow_print_string("Login successful! Press any key to continue.", 6);
+            getch();
+            patient_dashboard(temp.username);
+            fclose(file);
+            user_found = 1;
+            break;
+        }
+    }
+    if (user_found == 0)
+    {
+        gotoxy(8, 9);
+        slow_print_string("Invalid username or password! Press any key to retry.", 6);
+        getch();
+        fclose(file);
+        patient_login();
+    }
 }
 
 void doctor_registration()
@@ -400,10 +480,39 @@ void doctor_registration()
     slow_print_string(back_msg, 6);
     slow_print_string(blank_line, 6);
     slow_print_string("| Name:                                                                        |\n", 6);
-    slow_print_string("| Specialty:                                                                   |\n", 6);
+    slow_print_string("| Age:                                                                         |\n", 6);
     slow_print_string("| Contact Number:                                                              |\n", 6);
     slow_print_string(blank_line, 6);
+    slow_print_string("| Qualifications:                                                              |\n", 6);
+    slow_print_string("| Institution:                                                                 |\n", 6);
+    slow_print_string("| Experience:                                                                  |\n", 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string(border, 6);
+
+    clrscr();
+    slow_print_string(border, 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string("| Doctor Register                                                              |\n", 6);
     slow_print_string(frame_line, 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string("| Choose your specialty:                                                       |\n", 6);
+    for (int i = 0; i < 15; i++)
+    {
+        char spec_line[80];
+        char buffer[80];
+        sprintf(buffer, "| %2d) %s", i + 1, category[i]);
+        slow_print_string(buffer, 6);
+        for (int j = 0; j < 79 - strlen(buffer); j++)
+        {
+            slow_print_string(" ", 6);
+        }
+        slow_print_string("|\n", 6);
+    }
+    slow_print_string(blank_line, 6);
+    slow_print_string(frame_line, 6);
+    slow_print_string(input_msg, 6);
+    slow_print_string(border, 6);
 }
 
 void doctor_login()
@@ -418,6 +527,21 @@ void doctor_login()
     slow_print_string(blank_line, 6);
     slow_print_string("| Username:                                                                    |\n", 6);
     slow_print_string("| Password:                                                                    |\n", 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string(frame_line, 6);
+}
+
+void patient_dashboard(int username)
+{
+    clrscr();
+    slow_print_string(border, 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string("| Patient Dashboard                                                            |\n", 6);
+    slow_print_string(frame_line, 6);
+
+    slow_print_string(back_msg, 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string("| Welcome to your dashboard!                                                   |\n", 6);
     slow_print_string(blank_line, 6);
     slow_print_string(frame_line, 6);
 }
