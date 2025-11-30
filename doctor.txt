@@ -1,0 +1,2 @@
+Nelina|13|General Physician|9812121212|MBBS|IOM|15|12|admin
+Alisa|21|Dentist|9812341234|MD|iom|12|22|1234
