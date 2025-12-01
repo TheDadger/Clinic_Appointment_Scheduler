@@ -11,14 +11,37 @@ void slow_print_string(char *str, int d)
     }
 }
 
+struct doctor
+{
+    char name[50];
+    int age;
+    char specialty[50];
+    long long contact_number;
+    char qualifications[100];
+    char institution[100];
+    int experience;
+    int username;
+    char password[20];
+};
+
 int main()
 {
-    char opt[100];
-    do
+    FILE *file;
+    struct doctor temp;
+    file = fopen("doctor.txt", "r");
+    int username = 22;
+    while (fscanf(file, "%[^|]|%d|%[^|]|%lld|%[^|]|%[^|]|%d|%d|%[^\n]", temp.name, &temp.age, temp.specialty, &temp.contact_number, temp.qualifications, temp.institution, &temp.experience, &temp.username, temp.password) != EOF)
     {
-        slow_print_string("        ", 6); // Clear previous input
-        fgets(&opt, 3, stdin);
-    } while (*opt < '1' || *opt > '15');
+        if (temp.username == username)
+        {
+            break;
+        }
+    }
 
+    printf("DEBUG: Name='%s'\n", temp.name);
+    printf("DEBUG: Specialty='%s'\n", temp.specialty);
+    printf("DEBUG: Institution='%s'\n", temp.institution);
+    printf("DEBUG: Password='%s'\n", temp.password);
+    fclose(file);
     return 0;
 }
