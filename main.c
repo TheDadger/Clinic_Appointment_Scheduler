@@ -18,12 +18,12 @@ struct patient
 
 struct doctor
 {
-    char name[50];
+    char name[30];
     int age;
-    char specialty[50];
+    char specialty[20];
     long long contact_number;
-    char qualifications[100];
-    char institution[100];
+    char qualifications[5];
+    char institution[30];
     int experience;
     int username;
     char password[20];
@@ -43,7 +43,6 @@ struct appointment
     int patient_username;
     char date[20]; // "2025-01-30"
     int time_slot;
-    char status[20]; // "Booked" or "Completed"
 };
 
 void Main_Menu_Page();
@@ -58,7 +57,7 @@ void doctor_registration();
 void doctor_login();
 void patient_dashboard(int);
 void doctor_dashboard(int);
-void doctor_bio(char *, int, char *, long long, char *, char *, int, int, char *);
+void doctor_bio();
 void doctor_appointments(int);
 void doctor_availability(int);
 void patient_info(char *, int, char *, long long, char *, int, char *);
@@ -75,13 +74,39 @@ void slow_print_string(char *str, int d)
     }
 }
 
+int compare_date(char *date)
+{
+    struct tm input = {0};
+    sscanf(date, "%d-%d-%d", &input.tm_year, &input.tm_mon, &input.tm_mday);
+
+    input.tm_year -= 1900; // years since 1900
+    input.tm_mon -= 1;     // 0–11
+
+    time_t input_time = mktime(&input);
+
+    time_t now = time(NULL);
+    struct tm today = *localtime(&now);
+
+    today.tm_hour = 0;
+    today.tm_min = 0;
+    today.tm_sec = 0;
+
+    time_t today_time = mktime(&today);
+
+    if (input_time < today_time)
+        return -1; // past
+    if (input_time > today_time)
+        return 1; // future
+    return 0;     // today
+}
+
 char border[] = "+------------------------------------------------------------------------------+\n";
 char blank_line[] = "|                                                                              |\n";
 char frame_line[] = "|******************************************************************************|\n";
 char input_msg[] = "|  Select an option:                                                           |\n";
 char back_msg[] = "|                                                           (Click * for back) |\n";
 char home_msg[] = "|                                                           (Click # for home) |\n";
-char category[15][30] = {"General Physician", "Pediatrician", "Dermatologist", "Cardiologist", "Neurologist", "Psychiatrist", "Gynecologist", "Orthopedic Surgeon", "ENT Specialist", "Ophthalmologist", "Dentist", "Radiologist", "Anesthesiologist", "Urologist", "Endocrinologist"};
+char category[15][20] = {"General Physician", "Pediatrician", "Dermatologist", "Cardiologist", "Neurologist", "Psychiatrist", "Gynecologist", "Orthopedic Surgeon", "ENT Specialist", "Ophthalmologist", "Dentist", "Radiologist", "Anesthesiologist", "Urologist", "Endocrinologist"};
 char week_day[8][10] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "All"};
 
 int main()
@@ -873,7 +898,7 @@ void doctor_dashboard(int username)
             break;
         }
     }
-    char welcome_msg[100];
+    char welcome_msg[80];
     if (temp.name[0] == '\n')
     {
         for (int i = 0; temp.name[i] != '\0'; i++)
@@ -895,7 +920,7 @@ void doctor_dashboard(int username)
     switch (opt)
     {
     case '1':
-        doctor_bio(temp.name, temp.age, temp.specialty, temp.contact_number, temp.qualifications, temp.institution, temp.experience, temp.username, temp.password);
+        doctor_bio(temp.username);
         break;
     case '2':
         doctor_appointments(temp.username);
@@ -914,9 +939,20 @@ void doctor_dashboard(int username)
     }
 }
 
-void doctor_bio(char *name, int age, char *speciality, long long contact_number, char *qualifications, char *institution, int experience, int username, char *password)
+void doctor_bio(int username)
 {
     clrscr();
+    struct doctor temp;
+    FILE *file;
+    file = fopen("doctor.txt", "r");
+    while (fscanf(file, "%[^|]|%d|%[^|]|%lld|%[^|]|%[^|]|%d|%d|%[^\n]", temp.name, &temp.age, temp.specialty, &temp.contact_number, temp.qualifications, temp.institution, &temp.experience, &temp.username, temp.password) != EOF)
+    {
+        if (temp.username == username)
+        {
+            break;
+        }
+    }
+
     slow_print_string(border, 6);
     slow_print_string(blank_line, 6);
     slow_print_string(blank_line, 6);
@@ -933,47 +969,52 @@ void doctor_bio(char *name, int age, char *speciality, long long contact_number,
     slow_print_string(blank_line, 6);
     slow_print_string(border, 6);
 
+    if (temp.name[0] == '\n')
+    {
+        for (int i = 0; temp.name[i] != '\0'; i++)
+        {
+            temp.name[i] = temp.name[i + 1];
+        }
+    }
     gotoxy(3, 3);
-    slow_print_string(name, 6);
+    slow_print_string(temp.name, 6);
     slow_print_string(" Bio", 6);
 
-    char username_str[30];
+    char username_str[15];
     gotoxy(2, 6);
-    sprintf(username_str, "Username: %d", username);
+    sprintf(username_str, "Username: %d", temp.username);
     slow_print_string(username_str, 6);
     gotoxy(2, 7);
-    char name_str[100];
-    sprintf(name_str, "Name: %s", name);
+    char name_str[60];
+
+    sprintf(name_str, "Name: %s", temp.name);
+
     slow_print_string(name_str, 6);
     gotoxy(2, 8);
-    char age_str[20];
-    sprintf(age_str, "Age: %d", age);
+    char age_str[10];
+    sprintf(age_str, "Age: %d", temp.age);
     slow_print_string(age_str, 6);
     gotoxy(2, 9);
-    char spec[50];
-    sprintf(spec, "Specialty: %s", speciality);
+    char spec[40];
+    sprintf(spec, "Specialty: %s", temp.specialty);
     slow_print_string(spec, 6);
     gotoxy(2, 10);
     char contact_str[30];
-    sprintf(contact_str, "Contact Number: %lld", contact_number);
+    sprintf(contact_str, "Contact Number: %lld", temp.contact_number);
     slow_print_string(contact_str, 6);
     gotoxy(2, 11);
-    char qual[100];
-    sprintf(qual, "Qualifications: %s", qualifications);
+    char qual[25];
+    sprintf(qual, "Qualifications: %s", temp.qualifications);
     slow_print_string(qual, 6);
     gotoxy(2, 12);
     char inst[100];
-    sprintf(inst, "Institution: %s", institution);
+    sprintf(inst, "Institution: %s", temp.institution);
     slow_print_string(inst, 6);
     gotoxy(2, 13);
     char experience_str[30];
-    sprintf(experience_str, "Experience: %d years", experience);
+    sprintf(experience_str, "Experience: %d years", temp.experience);
     slow_print_string(experience_str, 6);
 
-    gotoxy(2, 14);
-    char pass[100];
-    sprintf(pass, "Password: %s", password);
-    slow_print_string(pass, 6);
     while (1)
     {
         char opt = getch();
@@ -1244,12 +1285,17 @@ void patient_booking(int username)
     slow_print_string(input_msg, 6);
     slow_print_string(border, 6);
     gotoxy(13, 7);
-    printf("%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+    char date_today[12], date_tomorrow[12], date_next_day[12];
+    sprintf(date_today, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+    slow_print_string(date_today, 6);
     gotoxy(16, 8);
-    printf("%04d-%02d-%02d", tomorrow.tm_year + 1900, tomorrow.tm_mon + 1, tomorrow.tm_mday);
+    sprintf(date_tomorrow, "%04d-%02d-%02d", tomorrow.tm_year + 1900, tomorrow.tm_mon + 1, tomorrow.tm_mday);
+    slow_print_string(date_tomorrow, 6);
     gotoxy(26, 9);
-    printf("%04d-%02d-%02d", next_day.tm_year + 1900, next_day.tm_mon + 1, next_day.tm_mday);
+    sprintf(date_next_day, "%04d-%02d-%02d", next_day.tm_year + 1900, next_day.tm_mon + 1, next_day.tm_mday);
+    slow_print_string(date_next_day, 6);
     char opt_1;
+    char date[11];
     do
     {
         gotoxy(21, 12);
@@ -1259,12 +1305,15 @@ void patient_booking(int username)
     {
     case '1':
         strcpy(check.day, week_day[t.tm_wday]);
+        strcpy(date, date_today);
         break;
     case '2':
         strcpy(check.day, week_day[tomorrow.tm_wday]);
+        strcpy(date, date_tomorrow);
         break;
     case '3':
         strcpy(check.day, week_day[next_day.tm_wday]);
+        strcpy(date, date_next_day);
         break;
     case '*':
         patient_dashboard(username);
@@ -1317,7 +1366,6 @@ void patient_booking(int username)
         return;
     }
 
-    /* Read each doctor and check availability file for matching day and time_slot */
     while (fscanf(file, "%49[^|]|%d|%49[^|]|%lld|%99[^|]|%99[^|]|%d|%d|%19[^\n]",
                   temp.name, &temp.age, temp.specialty, &temp.contact_number,
                   temp.qualifications, temp.institution, &temp.experience,
@@ -1342,7 +1390,9 @@ void patient_booking(int username)
                             temp.name[i] = temp.name[i + 1];
                         }
                     }
-                    sprintf(info, "%d | Dr. %s | Contact: %lld | Experience: %d \n", temp.username, temp.name, temp.contact_number, temp.experience);
+
+                    sprintf(info, "|  %d | Dr. %s  ", temp.username, temp.name);
+                    temp.name[strcspn(temp.name, "\n")] = '\0';
                     gotoxy(0, y);
                     slow_print_string(info, 6);
                     for (int i = 0; i < 79 - strlen(info); i++)
@@ -1352,6 +1402,8 @@ void patient_booking(int username)
                     slow_print_string("|\n", 6);
                     found = 1;
                     y++;
+                    memset(&temp, 0, sizeof(temp)); // to reset memory
+                    memset(&verify, 0, sizeof(verify));
                 }
             }
             fclose(fp);
@@ -1371,17 +1423,178 @@ void patient_booking(int username)
         patient_dashboard(username);
         return;
     }
-    else
+    struct appointment store;
+    gotoxy(21, y + 2);
+    scanf("%d", &input);
+    file = fopen("appointments.txt", "a");
+    fprintf(file, "%d|%d|%s|%d\n", input, username, date, check.time_slot);
+    gotoxy(8, y);
+    slow_print_string("Appointment Booked Succesfully. Press any key to continue!", 6);
+    fclose(file);
+    fflush(stdout);
+    getch();
+    getch();
+    patient_dashboard(username);
+    return;
+}
+
+// void patient_history(int username)
+// {
+//     slow_print_string(border, 6);
+//     slow_print_string(blank_line, 6);
+//     slow_print_string("| Appointment History                                                          |\n", 6);
+//     slow_print_string(frame_line, 6);
+//     slow_print_string(back_msg, 6);
+//     slow_print_string(blank_line, 6);
+//     slow_print_string("| 1. Current Appointments                                                      |\n", 6);
+//     slow_print_string("| 2. Past Appointments                                                         |\n", 6);
+//     slow_print_string(blank_line, 6);
+//     slow_print_string(frame_line, 6);
+//     slow_print_string(input_msg, 6);
+//     slow_print_string(border, 6);
+//     char opt;
+//     do
+//     {
+//         gotoxy(21, 10);
+//         opt = getch();
+//         switch (opt)
+//         {
+//         case '*':
+//             patient_dashboard(username);
+//             break;
+//         case '1':
+//             FILE *fp;
+//             struct appointment temp;
+//             fp = fopen("appointments.txt", "r");
+//             time_t now = time(NULL);
+//             while (fscanf(fp, "%d|%d|%[^|]|%d\n", &temp.doctor_username, &temp.patient_username, temp.date, temp.time_slot) != EOF)
+//             {
+//             }
+//         }
+//     } while (!(opt == '*' || opt == '1' || opt == '2'));
+// }
+
+void patient_history(int username)
+{
+    clrscr();
+    slow_print_string(border, 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string("| Appointment History                                                          |\n", 6);
+    slow_print_string(frame_line, 6);
+    slow_print_string(back_msg, 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string("| 1. Current Appointments                                                      |\n", 6);
+    slow_print_string("| 2. Past Appointments                                                         |\n", 6);
+    slow_print_string(blank_line, 6);
+    slow_print_string(frame_line, 6);
+    slow_print_string(input_msg, 6);
+    slow_print_string(border, 6);
+
+    char opt;
+    do
     {
-        gotoxy(21, y + 3);
-        scanf("%d", &input);
+        gotoxy(21, 11);
+        opt = getch();
+
+        if (opt == '*')
+        {
+            patient_dashboard(username);
+            return;
+        }
+
+        if (opt == '1' || opt == '2')
+            break;
+
+    } while (1);
+
+    clrscr();
+    slow_print_string(border, 6);
+    slow_print_string(blank_line, 6);
+
+    if (opt == '1')
+        slow_print_string("| Current Appointments                                                         |\n", 6);
+    else
+        slow_print_string("| Past Appointments                                                            |\n", 6);
+
+    slow_print_string(frame_line, 6);
+
+    FILE *fp = fopen("appointments.txt", "r");
+    if (!fp)
+    {
+        slow_print_string("| No appointment history found.                                                |\n", 6);
+        slow_print_string(border, 6);
         getch();
         patient_dashboard(username);
         return;
     }
-}
 
-void patient_history(int username)
-{
-    slow_print_string("Under Development", 6);
+    struct appointment temp;
+    int y = 6;
+    int found = 0;
+
+    while (fscanf(fp, "%d|%d|%[^|]|%d\n", &temp.doctor_username, &temp.patient_username, temp.date, &temp.time_slot) != EOF)
+    {
+        // Only show this patient's appointments
+        if (temp.patient_username != username)
+            continue;
+
+        int cmp = compare_date(temp.date);
+        struct doctor doc;
+
+        if ((opt == '1' && cmp >= 0) || // current (today or future)
+            (opt == '2' && cmp < 0))    // past
+        {
+            found = 1;
+            char line[120];
+            FILE *file;
+            fopen("doctor.txt", "r");
+            while (fscanf(file, "%[^|]|%d|%[^|]|%lld|%[^|]|%[^|]|%d|%d|%[^\n]", doc.name, &doc.age, doc.specialty, &doc.contact_number, doc.qualifications, doc.institution, &doc.experience, &doc.username, doc.password) != EOF)
+            {
+                if (doc.username == temp.doctor_username)
+                {
+                    break;
+                }
+            }
+            if (doc.name[0] == '\n')
+            {
+                for (int i = 0; doc.name[i] != '\0'; i++)
+                {
+                    doc.name[i] = doc.name[i + 1];
+                }
+            }
+            char time[20];
+            switch (temp.time_slot)
+            {
+            case 1:
+                time[20] = "7am to 10am";
+                break;
+            case 2:
+                time[20] = "12pm to 3pm";
+                break;
+            case 3:
+                time[20] = "5pm to 8pm";
+            }
+            sprintf(line, "| Dr.%d  |  %s  | Slot %d ", doc.name, temp.date, time);
+            for (int i = 0; i < 79 - str(line); i++)
+            {
+                slow_print_string(" ", 6);
+            }
+            slow_print_string("\n", 6);
+
+            gotoxy(0, y++);
+            slow_print_string(line, 6);
+        }
+    }
+
+    fclose(fp);
+
+    if (!found)
+    {
+        slow_print_string("| No records found.                                                            |\n", 6);
+    }
+
+    slow_print_string(frame_line, 6);
+    slow_print_string(border, 6);
+    getch();
+    patient_dashboard(username);
 }
