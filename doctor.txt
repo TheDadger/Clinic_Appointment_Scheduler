@@ -1,3 +1,4 @@
 Nelina|13|General Physician|9812121212|MBBS|IOM|15|12|admin
 Alisa|21|Dentist|9812341234|MD|iom|12|22|1234
 ankit|12|Dentist|9100000000|MD|kmc|20|32|ankit
+bahun|55|Radiologist|9087654321|MBBS|asd|12|42|asdf
